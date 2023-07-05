@@ -126,7 +126,7 @@ class Car
 	int speed;
 	const int MAX_SPEED;
 	bool driver_inside;
-	struct Treads
+	struct Threads
 	{
 		std::thread panel_thread;
 		std::thread engine_idle_thread;
@@ -251,7 +251,10 @@ public:
 			cout << "Fuel level:\t" << tank.get_fuel_level() << " liters.\n";
 			cout << "Engine is " << (engine.started() ? "started" : "stopped") << endl;
 			std::this_thread::sleep_for(1s);
+			if (tank.get_fuel_level() < 5)cout << "LOW FUEL" << endl;
+			std::this_thread::sleep_for(1s);
 		}
+		
 	}
 
 	void info()const
