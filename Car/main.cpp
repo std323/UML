@@ -1,6 +1,7 @@
 ﻿#include<Windows.h>
 #include<iostream>
 #include<conio.h>
+
 #include<thread>
 using namespace std;
 
@@ -67,6 +68,7 @@ class Engine
 {
 	double consumption;
 	double consumption_per_second;
+	double default_consumption_per_second;
 	bool is_started;
 public:
 	double get_consumption()const
@@ -96,9 +98,19 @@ public:
 		this->consumption = consumption;
 		set_consumption_per_second();
 	}
-	void set_consumption_per_second()
+	double set_consumption_per_second()
 	{
-		consumption_per_second = consumption * 3e-5;
+		return consumption_per_second = default_consumption_per_second = consumption * 3e-5;
+	}
+	double set_consumption_per_second(int speed)
+	{
+		if (speed == 0)consumption_per_second = consumption * 3e-5;
+		else if (speed <= 60)consumption_per_second = default_consumption_per_second * 20 / 3;
+		else if (speed <=100 )consumption_per_second = default_consumption_per_second * 40 + default_consumption_per_second * 20 / 3;
+		else if (speed <=140 )consumption_per_second = default_consumption_per_second * 20 / 3;
+		else if (speed <=200 )consumption_per_second = default_consumption_per_second * 50 / 6;
+		else  consumption_per_second = default_consumption_per_second * 10;
+			return consumption_per_second;
 	}
 	Engine(double consumption)
 	{
@@ -234,7 +246,6 @@ public:
 					}
 					else
 					{
-
 						double fuel;
 						cout << "Введите обьем топлива: ";
 						cin >> fuel;
@@ -278,6 +289,7 @@ public:
 					get_out();
 				}
 			}
+			engine.set_consumption_per_second(speed);
 			if (tank.get_fuel_level() == 0) stop();
 			if (speed && !threads.free_wheeling_thread.joinable())
 				threads.free_wheeling_thread = std::thread(&Car::free_wheeling, this);
@@ -297,6 +309,7 @@ public:
 		while (speed)
 		{
 			if (speed-- < 0)speed = 0;
+			engine.set_consumption_per_second(speed);
 			std::this_thread::sleep_for(1s);
 		}
 	}
@@ -306,7 +319,7 @@ public:
 		{
 			HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);//Получаем обработчик окна консоли
 			system("CLS");
-			double coefficient = 2.2;
+			double coefficient = 2.4;
 			for (int i = 0; i < MAX_SPEED / coefficient; i++)
 			{
 				SetConsoleTextAttribute(hConsole, 0x02);
@@ -328,10 +341,9 @@ public:
 			cout << endl;
 			cout << "Engine is " << (engine.started() ? "started" : "stopped") << endl;
 			cout << "Speed:\t" << speed << " km/h.\n";
+			cout << "Consumption per second:" << engine.get_consumption_per_second() << " liters.\n";
 			std::this_thread::sleep_for(1s);
-			
-			
-		}
+			}
 		
 	}
 
@@ -371,7 +383,9 @@ void main()
 	//Car bmw(engine, tank, 280);	bmw.info();
 	//Car bmw(Engine(12), Tank(80), 280); bmw.info();
 
-	Car bmw(12, 80, 280, 20); 
+	Car bmw(25, 80, 280, 20); 
+	bmw.info();
+	system("PAUSE");
 	/*bmw.fill(25.5);
 	bmw.info();*/
 	bmw.control();
